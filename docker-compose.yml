@@ -1,0 +1,229 @@
+# services:
+#   db:
+#     image: postgres:latest
+#     container_name: sneakers-postgres
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: mysecretpassword
+#       POSTGRES_DB: sneakersdb
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/18/docker
+
+#   api:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: sneakers-api
+#     environment:
+#       ASPNETCORE_ENVIRONMENT: Development
+#       ConnectionStrings__SneakersStoreDbContext: "Host=db;Port=5432;Database=sneakersdb;Username=postgres;Password=mysecretpassword"
+#     ports:
+#       - "7154:8080"
+#     depends_on:
+#       - db
+# volumes:
+#   postgres_data:
+
+
+# services — список контейнеров, которые Docker Compose должен запускать.
+# В данном случае у нас два сервиса:
+# 1. db  — PostgreSQL
+# 2. api — ASP.NET Core Web API
+services:
+
+  # Сервис базы данных.
+  # Имя "db" важно:
+  # другие контейнеры в этой же Docker-сети смогут обращаться
+  # к PostgreSQL по адресу db:5432.
+  db:
+
+    # Docker-образ PostgreSQL.
+    # Лучше в реальном проекте указывать конкретную версию,
+    # например postgres:18, а не latest,
+    # чтобы обновление latest случайно ничего не сломало.
+    image: postgres:latest
+
+    # Явное имя контейнера.
+    # Без этого Docker сам создаст имя вроде:
+    # sneakersstore-db-1
+    container_name: sneakers-postgres
+
+    # Переменные окружения, которые официальный образ PostgreSQL
+    # использует при первом запуске контейнера.
+    environment:
+
+      # Имя пользователя PostgreSQL.
+      POSTGRES_USER: postgres
+
+      # Пароль этого пользователя.
+      POSTGRES_PASSWORD: mysecretpassword
+
+      # Имя базы данных, которая будет создана автоматически
+      # при первом запуске контейнера.
+      POSTGRES_DB: sneakersdb
+
+    # Проброс порта из контейнера на твой компьютер.
+    #
+    # Формат:
+    # "порт_на_компьютере:порт_в_контейнере"
+    #
+    # Здесь:
+    # localhost:5432 на Windows
+    #          ↓
+    # PostgreSQL:5432 внутри контейнера
+    #
+    # Благодаря этому ты можешь подключаться к базе
+    # с компьютера через localhost:5432,
+    # например из pgAdmin, DataGrip или Visual Studio.
+    ports:
+      - "5432:5432"
+
+    # Volume нужен, чтобы данные PostgreSQL не исчезли
+    # после удаления или пересоздания контейнера.
+    #
+    # Слева:
+    # postgres_data — имя Docker volume.
+    #
+    # Справа:
+    # путь внутри контейнера, где PostgreSQL хранит данные.
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/docker
+
+
+  # Сервис ASP.NET Core Web API.
+  api:
+
+    # В отличие от PostgreSQL, здесь мы не используем
+    # готовый image из Docker Hub.
+    #
+    # Docker должен самостоятельно собрать image
+    # на основе нашего Dockerfile.
+    build:
+
+      # Build context.
+      #
+      # "." означает:
+      # текущая папка является контекстом сборки.
+      #
+      # Именно относительно этой папки работают команды COPY
+      # внутри Dockerfile.
+      context: .
+
+      # Указываем, какой Dockerfile использовать.
+      # Здесь файл называется просто Dockerfile
+      # и лежит в текущей папке.
+      dockerfile: Dockerfile
+
+    # Имя контейнера с API.
+    container_name: sneakers-api
+
+    # Переменные окружения,
+    # которые будут доступны ASP.NET Core внутри контейнера.
+    environment:
+
+      # Указываем окружение ASP.NET Core.
+      #
+      # Development означает, что:
+      # app.Environment.IsDevelopment() == true
+      #
+      # Поэтому у тебя будут работать:
+      # MapOpenApi()
+      # MapScalarApiReference()
+      #
+      # В production обычно ставят Production.
+      ASPNETCORE_ENVIRONMENT: Development
+
+      # Строка подключения к PostgreSQL.
+      #
+      # Очень важный момент:
+      #
+      # Host=db
+      #
+      # Здесь НЕ localhost.
+      #
+      # Почему?
+      # Потому что localhost внутри контейнера api
+      # означает сам контейнер api.
+      #
+      # "db" — это имя сервиса PostgreSQL,
+      # указанное выше:
+      #
+      # services:
+      #   db:
+      #
+      # Docker Compose создаёт общую сеть,
+      # и контейнер api может найти PostgreSQL
+      # просто по имени "db".
+      #
+      # Двойное подчёркивание "__" используется вместо ":"
+      # в конфигурации ASP.NET Core.
+      #
+      # То есть:
+      #
+      # ConnectionStrings__SneakersStoreDbContext
+      #
+      # соответствует:
+      #
+      # ConnectionStrings:SneakersStoreDbContext
+      #
+      # в appsettings.json.
+      ConnectionStrings__SneakersStoreDbContext: "Host=db;Port=5432;Database=sneakersdb;Username=postgres;Password=mysecretpassword"
+
+    # Проброс порта API.
+    #
+    # Формат:
+    # "порт_на_компьютере:порт_в_контейнере"
+    #
+    # Здесь:
+    #
+    # localhost:7154
+    #       ↓
+    # контейнер api:8080
+    #
+    # То есть ASP.NET Core внутри контейнера работает
+    # на порту 8080,
+    # а с твоего компьютера ты обращаешься к нему через:
+    #
+    # http://localhost:7154
+    ports:
+      - "7154:8080"
+
+    # Говорит Docker Compose,
+    # что сервис api зависит от сервиса db.
+    #
+    # То есть сначала Compose запустит контейнер PostgreSQL,
+    # а потом контейнер API.
+    #
+    # Важно:
+    # depends_on НЕ гарантирует,
+    # что PostgreSQL уже полностью готов принимать соединения.
+    #
+    # Он гарантирует только порядок запуска контейнеров.
+    depends_on:
+      - db
+
+
+# Глобальный раздел volumes.
+#
+# Здесь объявляется Docker volume с именем postgres_data,
+# который выше использует PostgreSQL.
+volumes:
+
+  # Именованный volume.
+  #
+  # Docker сам создаст и будет хранить его отдельно
+  # от контейнеров.
+  #
+  # Поэтому если выполнить:
+  #
+  # docker compose down
+  #
+  # контейнеры удалятся,
+  # но данные базы останутся.
+  #
+  # Чтобы удалить и volume тоже:
+  #
+  # docker compose down -v
+  postgres_data:
