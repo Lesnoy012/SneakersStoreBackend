@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SneakersStoreAuth.API/SneakersStoreAuth.API.csproj" />
+  <Project Path="SneakersStoreAuth.Application/SneakersStoreAuth.Application.csproj" Id="1a652286-04a5-46db-97a3-9fe7588478e4" />
+  <Project Path="SneakersStoreAuth.Core/SneakersStoreAuth.Core.csproj" Id="9acdfe90-cd55-41e9-9bc0-5f6fab2fe1ff" />
+  <Project Path="SneakersStoreAuth.DataBase/SneakersStoreAuth.DataAccess.csproj" Id="d79a59ba-c730-4b6f-95c3-d65f92de5ba1" />
+</Solution>
