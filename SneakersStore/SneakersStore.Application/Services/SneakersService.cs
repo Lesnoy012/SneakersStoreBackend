@@ -2,6 +2,7 @@
 using SneakersStore.Core.Abstractions;
 using SneakersStore.Core.Filters;
 using SneakersStore.Core.Models;
+using SneakersStore.Core.Sort;
 
 namespace SneakersStore.Application.Services
 {
@@ -19,9 +20,9 @@ namespace SneakersStore.Application.Services
             return await _sneakersRepository.Create(sneakers);
         }
 
-        public async Task<List<Sneakers>> GetAllSneakers(SneakersFilter filter)
+        public async Task<List<Sneakers>> GetAllSneakers(SneakersFilter filter, SneakersSort sort)
         {
-            return await _sneakersRepository.Get(filter);
+            return await _sneakersRepository.Get(filter, sort);
         }
 
         public async Task<Sneakers> GetSneakersById(Guid id)

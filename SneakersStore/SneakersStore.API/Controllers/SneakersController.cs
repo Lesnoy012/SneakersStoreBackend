@@ -3,6 +3,7 @@ using SneakersStore.API.Contracts;
 using SneakersStore.Core.Abstractions;
 using SneakersStore.Core.Filters;
 using SneakersStore.Core.Models;
+using SneakersStore.Core.Sort;
 
 namespace SneakersStore.API.Controllers
 {
@@ -28,11 +29,15 @@ namespace SneakersStore.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SneakersResponse>>> GetAllSneakers([FromQuery] SneakersFilterRequest filterRequest, SneakersSortRequest sortRequest)
+        public async Task<ActionResult<List<SneakersResponse>>> GetSneakers(
+            [FromQuery] SneakersFilterRequest filterRequest,
+            [FromQuery] SneakersSortRequest sortRequest)
         {
             var filter = new SneakersFilter(filterRequest.Title);
 
-            var sneakers = await _sneakersService.GetAllSneakers(filter);
+            var sort = new SneakersSort(sortRequest.SortBy, sortRequest.SortDirection);
+
+            var sneakers = await _sneakersService.GetAllSneakers(filter, sort);
 
             var result = sneakers.Select(s => new SneakersResponse(
                 s.Id,
