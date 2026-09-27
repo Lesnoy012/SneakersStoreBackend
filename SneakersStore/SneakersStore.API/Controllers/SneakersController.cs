@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using SneakersStore.API.Contracts;
 using SneakersStore.Core.Abstractions;
 using SneakersStore.Core.Filters;
-using SneakersStore.Core.Models;
 using SneakersStore.Core.Sort;
 
 namespace SneakersStore.API.Controllers
@@ -21,9 +20,7 @@ namespace SneakersStore.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateSneakers([FromBody] SneakersRequest request)
         {
-            var sneakers = Sneakers.Create(Guid.NewGuid(), request.Title, request.Price, request.Img);
-
-            var result = await _sneakersService.CreateSneakers(sneakers);
+            var result = await _sneakersService.CreateSneakers(request.Title, request.Price, request.Img);
 
             return Ok(result);
         }

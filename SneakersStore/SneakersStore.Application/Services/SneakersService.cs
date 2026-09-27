@@ -15,8 +15,10 @@ namespace SneakersStore.Application.Services
             _sneakersRepository = sneakersRepository;
         }
 
-        public async Task<Guid> CreateSneakers(Sneakers sneakers)
+        public async Task<Guid> CreateSneakers(string Title, decimal Price, string Img)
         {
+            var sneakers = Sneakers.Create(Guid.NewGuid(), Title, Price, Img);
+
             return await _sneakersRepository.Create(sneakers);
         }
 

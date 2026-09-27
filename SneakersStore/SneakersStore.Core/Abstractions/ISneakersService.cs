@@ -6,7 +6,7 @@ namespace SneakersStore.Core.Abstractions
 {
     public interface ISneakersService
     {
-        Task<Guid> CreateSneakers(Sneakers sneakers);
+        Task<Guid> CreateSneakers(string Title, decimal Price, string Img);
         Task<List<Sneakers>> GetAllSneakers(SneakersFilter filter, SneakersSort sort);
         Task<Sneakers> GetSneakersById(Guid id);
         Task<Guid> DeleteSneakersById(Guid id);
